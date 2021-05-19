@@ -2,6 +2,10 @@
 gcloud container clusters get-credentials <cluster_name>
 
 
+# Some Useful Commands
+
+Follow the report for more details.
+
 ## Docker
 docker build -t <image_name> .
 
@@ -26,7 +30,7 @@ kubectl logs pods/mnist-train-kbf-worker-0 -n kubeflow
 
 kubectl -n kubeflow delete pytorchjobs <job_name>
 
-kubectl config set-context --current --namespace=<insert-namespace-name-here>
+kubectl config set-context --current --namespace= <insert-namespace-name-here>
 
 ## Katib
 
