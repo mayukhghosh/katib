@@ -2,9 +2,6 @@
 
 Follow the report for more details.
 
-### GCP
-gcloud container clusters get-credentials <cluster_name>
-
 
 ### Docker
 docker build -t <image_name> .
