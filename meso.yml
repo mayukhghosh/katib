@@ -1,0 +1,75 @@
+apiVersion: "kubeflow.org/v1beta1"
+kind: Experiment
+metadata:
+  namespace: kubeflow
+  name: katib-pytorchjob-experiment
+spec:
+  parallelTrialCount: 5
+  maxTrialCount: 9
+  maxFailedTrialCount: 3
+  objective:
+    type: maximize
+    goal: 0.99
+    objectiveMetricName: accuracy
+  algorithm:
+    algorithmName: random
+  parameters:
+    - name: lr
+      parameterType: double
+      feasibleSpace:
+        min: "0.7"
+        max: "1.0"
+  trialTemplate:
+    primaryContainerName: pytorch
+    trialParameters:
+      - name: learningRate
+        description: Learning rate for the training model
+        reference: lr
+    trialSpec:
+      apiVersion: "kubeflow.org/v1"
+      kind: PyTorchJob
+      spec:
+       pytorchReplicaSpecs:
+        Master:
+          replicas: 1
+          restartPolicy: OnFailure
+          template:
+            metadata:
+              annotations:
+                sidecar.istio.io/inject: "false"
+            spec:
+              containers:
+                - name: pytorch
+                  image: mesosphere/kubeflow:mnist-pytorch-1.2.0-1.0.0
+                  imagePullPolicy: Always
+                  command: ["python", "-u", "/mnist.py"]
+                  args:
+                    - "--epochs=1"
+                    - "--lr=${trialParameters.learningRate}"
+                  resources:
+                    limits:
+                      nvidia.com/gpu: 0
+                    requests:
+                      cpu: 1
+                      memory: 1Gi
+        Worker:
+          replicas: 2
+          restartPolicy: OnFailure
+          template:
+            metadata:
+              annotations:
+                sidecar.istio.io/inject: "false"
+            spec:
+              containers:
+                - name: pytorch
+                  image: mesosphere/kubeflow:mnist-pytorch-1.2.0-1.0.0
+                  imagePullPolicy: Always
+                  args:
+                    - "--epochs=1"
+                    - "--lr=${trialParameters.learningRate}"
+                  resources:
+                    limits:
+                      nvidia.com/gpu: 0
+                    requests:
+                      cpu: 1
+                      memory: 1Gi
